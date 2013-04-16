@@ -1,0 +1,15 @@
+{application, alarm_service,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  sasl,
+                  mnesia
+                 ]},
+  {mod, {alarm_service_app, []}},
+  {env, [{long_gc, 10000},
+         {large_heap, 64000000}]}
+ ]}.
