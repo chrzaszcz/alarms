@@ -19,7 +19,12 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    alarm_service_sup:start_link().
+    {ok, Pid} = alarm_service_sup:start_link(),
+    ok = alarm_service_basic_handler:swap_handler(),
+    [ok = H:add_handler() || H <- alarm_service_utils:get_cfg(extra_handlers)],
+    {ok, Pid}.
 
 stop(_State) ->
-    ok.
+    [gen_event:delete_handler(alarm_handler, H, [])
+     || H <- gen_event:which_handlers(alarm_handler)],
+    gen_event:add_handler(alarm_handler, alarm_handler, []).

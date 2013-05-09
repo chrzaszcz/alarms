@@ -7,9 +7,11 @@
                   kernel,
                   stdlib,
                   sasl,
-                  mnesia
+                  mnesia,
+                  folsom
                  ]},
   {mod, {alarm_service_app, []}},
   {env, [{long_gc, 10000},
-         {large_heap, 64000000}]}
+         {large_heap, 64000000},
+         {extra_handlers, [alarm_service_folsom_handler]}]}
  ]}.

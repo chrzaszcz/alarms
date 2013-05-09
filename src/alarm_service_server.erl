@@ -58,8 +58,8 @@ start_link() ->
 %%--------------------------------------------------------------------
 init([]) ->
     erlang:system_monitor(
-      self(), [{long_gc, cfg(long_gc)},
-               {large_heap, cfg(large_heap)},
+      self(), [{long_gc, alarm_service_utils:get_cfg(long_gc)},
+               {large_heap, alarm_service_utils:get_cfg(large_heap)},
                busy_port,
                busy_dist_port]),
     {ok, _} = mnesia:subscribe(system),
@@ -114,7 +114,7 @@ handle_info(Info, State) ->
         false ->
             ok;
         {AlarmType, Details} ->
-            set_alarm(AlarmType, {erlang:localtime(), Details})
+            set_alarm(AlarmType, Details)
     end,
     {noreply, State}.
 
@@ -178,7 +178,3 @@ msg_to_alarm(_) ->
 
 set_alarm(AlarmType, Info) ->
     alarm_handler:set_alarm({AlarmType, Info}).
-
-cfg(Key) ->
-    {ok, Val} = application:get_env(Key),
-    Val.
