@@ -6,18 +6,18 @@
 %%% @end
 %%% Created : 8 May 2013 by pawel.chrzaszcz@erlang-solutions.com
 %%%-------------------------------------------------------------------
--module(alarm_service_utils).
+-module(alarms_utils).
 
 -export([alarm_types/0, get_cfg/1, set_cfg/2]).
 
--include("alarm_service.hrl").
+-include("alarms.hrl").
 
 get_cfg(Key) ->
-    {ok, Val} = application:get_env(alarm_service, Key),
+    {ok, Val} = application:get_env(alarms, Key),
     Val.
 
 set_cfg(Key, Val) ->
-    application:set_env(alarm_service, Key, Val).
+    application:set_env(alarms, Key, Val).
 
 alarm_types() ->
     ?ALARM_TYPES.

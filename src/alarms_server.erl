@@ -1,12 +1,12 @@
 %%%-------------------------------------------------------------------
 %%% @author  Pawel Chrzaszcz
 %%% @copyright (C) 2013, Erlang Solutions Ltd.
-%%% @doc Main server for alarm_service application.
+%%% @doc Main server for alarms application.
 %%%
 %%% @end
 %%% Created : 16 Apr 2013 by pawel.chrzaszcz@erlang-solutions.com
 %%%-------------------------------------------------------------------
--module(alarm_service_server).
+-module(alarms_server).
 
 -behaviour(gen_server).
 
@@ -58,8 +58,8 @@ start_link() ->
 %%--------------------------------------------------------------------
 init([]) ->
     erlang:system_monitor(
-      self(), [{long_gc, alarm_service_utils:get_cfg(long_gc)},
-               {large_heap, alarm_service_utils:get_cfg(large_heap)},
+      self(), [{long_gc, alarms_utils:get_cfg(long_gc)},
+               {large_heap, alarms_utils:get_cfg(large_heap)},
                busy_port,
                busy_dist_port]),
     {ok, _} = mnesia:subscribe(system),

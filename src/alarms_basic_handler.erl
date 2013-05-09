@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 8 May 2013 by pawel.chrzaszcz@erlang-solutions.com
 %%%-------------------------------------------------------------------
--module(alarm_service_basic_handler).
+-module(alarms_basic_handler).
 
 -behaviour(gen_event).
 
@@ -101,7 +101,7 @@ init(_) ->
 %%--------------------------------------------------------------------
 handle_event({set_alarm, {AlarmType, Details}},
              State = #state{alarms = Alarms0, log_ts = LogTS0}) ->
-    case lists:member(AlarmType, alarm_service_utils:alarm_types()) of
+    case lists:member(AlarmType, alarms_utils:alarm_types()) of
         true ->
             {Alarms, LogTS} = handle_alarm(AlarmType, Details, Alarms0, LogTS0),
             {ok, State#state{alarms = Alarms, log_ts = LogTS}};

@@ -1,4 +1,4 @@
-{application, alarm_service,
+{application, alarms,
  [
   {description, ""},
   {vsn, "1"},
@@ -10,8 +10,8 @@
                   mnesia,
                   folsom
                  ]},
-  {mod, {alarm_service_app, []}},
+  {mod, {alarms_app, []}},
   {env, [{long_gc, 10000},
          {large_heap, 64000000},
-         {extra_handlers, [alarm_service_folsom_handler]}]}
+         {extra_handlers, [alarms_folsom_handler]}]}
  ]}.

@@ -7,7 +7,7 @@
 %%% @end
 %%% Created : 16 Apr 2013 by pawel.chrzaszcz@erlang-solutions.com
 %%%-------------------------------------------------------------------
--module(alarm_service_app).
+-module(alarms_app).
 
 -behaviour(application).
 
@@ -19,9 +19,9 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    {ok, Pid} = alarm_service_sup:start_link(),
-    ok = alarm_service_basic_handler:swap_handler(),
-    [ok = H:add_handler() || H <- alarm_service_utils:get_cfg(extra_handlers)],
+    {ok, Pid} = alarms_sup:start_link(),
+    ok = alarms_basic_handler:swap_handler(),
+    [ok = H:add_handler() || H <- alarms_utils:get_cfg(extra_handlers)],
     {ok, Pid}.
 
 stop(_State) ->

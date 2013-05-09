@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 8 May 2013 by pawel.chrzaszcz@erlang-solutions.com
 %%%-------------------------------------------------------------------
--module(alarm_service_folsom_handler).
+-module(alarms_folsom_handler).
 
 -behaviour(gen_event).
 
@@ -58,7 +58,7 @@ init(_) ->
               folsom_metrics:new_history({alarm, AlarmType, history},
                                          ?HISTORY_SIZE),
               folsom_metrics:tag_metric({alarm, AlarmType, history}, alarm)
-      end, alarm_service_utils:alarm_types()),
+      end, alarms_utils:alarm_types()),
     {ok, #state{}}.
 
 %%--------------------------------------------------------------------
@@ -75,7 +75,7 @@ init(_) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_event({set_alarm, {AlarmType, Details}}, State) ->
-    case lists:member(AlarmType, alarm_service_utils:alarm_types()) of
+    case lists:member(AlarmType, alarms_utils:alarm_types()) of
         true ->
             folsom_metrics:notify({{alarm, AlarmType, summary}, 1}),
             folsom_metrics:notify({{alarm, AlarmType, history}, Details});
