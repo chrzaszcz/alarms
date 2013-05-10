@@ -14,17 +14,19 @@
 %% Application callbacks
 -export([start/2, stop/1]).
 
+-include("alarms.hrl").
+
 %% ===================================================================
 %% Application callbacks
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    {ok, Pid} = alarms_sup:start_link(),
-    ok = alarms_basic_handler:swap_handler(),
-    [ok = H:add_handler() || H <- alarms_utils:get_cfg(extra_handlers)],
-    {ok, Pid}.
+    gen_event:delete_handler(?EVENT_MANAGER, alarm_handler, []),
+    [ok = gen_event:add_handler(?EVENT_MANAGER, Handler, [])
+     || Handler <- alarms_utils:get_cfg(handlers)],
+    alarms_sup:start_link().
 
 stop(_State) ->
-    [gen_event:delete_handler(alarm_handler, H, [])
-     || H <- gen_event:which_handlers(alarm_handler)],
-    gen_event:add_handler(alarm_handler, alarm_handler, []).
+    [gen_event:delete_handler(?EVENT_MANAGER, Handler, [])
+     || Handler <- alarms_utils:get_cfg(handlers)],
+    gen_event:add_handler(?EVENT_MANAGER, alarm_handler, []).

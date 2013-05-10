@@ -11,15 +11,24 @@
 -behaviour(gen_event).
 
 %% API
--export([add_handler/0]).
+-export([add_handler/0, get_alarms/0, get_alarm/1]).
 
 %% gen_event callbacks
 -export([init/1, handle_event/2, handle_call/2,
          handle_info/2, terminate/2, code_change/3]).
 
--define(SERVER, alarm_handler).
+-include("alarms.hrl").
 
 -record(state, {}).
+
+-type alarm() :: {alarm_type(), alarm_data()}.
+-type alarm_type() :: term().
+-type alarm_data() :: {Count :: pos_integer(),
+                       CurCount :: pos_integer(),
+                       history()}.
+
+-type history() :: [{Timestamp :: calendar:datetime(),
+                     [{event, Details :: term()}]}].
 
 -define(HISTORY_SIZE, 1000).
 
@@ -34,7 +43,25 @@
 %%--------------------------------------------------------------------
 -spec add_handler() ->  ok | {'EXIT', term()} | term().
 add_handler() ->
-    gen_event:add_handler(?SERVER, ?MODULE, []).
+    gen_event:add_handler(?EVENT_MANAGER, ?MODULE, []).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Returns a list of all alarms
+%% @end
+%%--------------------------------------------------------------------
+-spec get_alarms() -> [alarm()].
+get_alarms() ->
+    gen_event:call(?EVENT_MANAGER, ?MODULE, get_alarms).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Returns the summary of alarms of the specified type.
+%% @end
+%%--------------------------------------------------------------------
+-spec get_alarm(alarm_type()) -> {ok, alarm_data()} | error.
+get_alarm(AlarmType) ->
+    gen_event:call(?EVENT_MANAGER, ?MODULE, {get_alarm, AlarmType}).
 
 %%%===================================================================
 %%% gen_event callbacks
@@ -101,6 +128,17 @@ handle_event(_, State) ->
 %%                   {remove_handler, Reply}
 %% @end
 %%--------------------------------------------------------------------
+handle_call(get_alarms, State) ->
+    Reply = lists:flatmap(fun(AlarmType) ->
+                                  case do_get_alarm(AlarmType) of
+                                      {0, _, _} -> [];
+                                      AlarmData -> [{AlarmType, AlarmData}]
+                                  end
+                          end, alarms_utils:alarm_types()),
+    {ok, Reply, State};
+handle_call({get_alarm, AlarmType}, State) ->
+    Reply = do_get_alarm(AlarmType),
+    {ok, Reply, State};
 handle_call(_Request, State) ->
     Reply = ok,
     {ok, Reply, State}.
@@ -148,3 +186,16 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+-define(EPOCH_SEC, 62167219200).
+
+do_get_alarm(AlarmType) ->
+    [{count, Count}, {one, CurCount}] =
+        folsom_metrics:get_metric_value({alarm, AlarmType, summary}),
+    History0 = folsom_metrics:get_metric_value({alarm, AlarmType, history}),
+    History = [{epoch_usec_to_local_time(TS), Events}
+               || {TS, Events} <- History0],
+    {Count, CurCount, History}.
+
+epoch_usec_to_local_time(USec) ->
+    calendar:universal_time_to_local_time(
+      calendar:gregorian_seconds_to_datetime(?EPOCH_SEC + USec div 1000000)).

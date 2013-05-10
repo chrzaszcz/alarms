@@ -1,17 +1,17 @@
 {application, alarms,
  [
-  {description, ""},
-  {vsn, "1"},
+  {description, "Alarm handler for systems using mnesia"},
+  {vsn, "0.1"},
   {registered, []},
   {applications, [
                   kernel,
                   stdlib,
                   sasl,
-                  mnesia,
-                  folsom
+                  mnesia
                  ]},
   {mod, {alarms_app, []}},
   {env, [{long_gc, 10000},
          {large_heap, 64000000},
-         {extra_handlers, [alarms_folsom_handler]}]}
+         {handlers, [alarms_basic_handler,
+                     alarms_folsom_handler]}]}
  ]}.

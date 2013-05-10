@@ -8,7 +8,7 @@
 %%%-------------------------------------------------------------------
 -module(alarms_utils).
 
--export([alarm_types/0, get_cfg/1, set_cfg/2]).
+-export([get_cfg/1, set_cfg/2, alarm_types/0, event_manager/0]).
 
 -include("alarms.hrl").
 
@@ -21,3 +21,6 @@ set_cfg(Key, Val) ->
 
 alarm_types() ->
     ?ALARM_TYPES.
+
+event_manager() ->
+    ?EVENT_MANAGER.

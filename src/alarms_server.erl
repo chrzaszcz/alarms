@@ -11,7 +11,8 @@
 -behaviour(gen_server).
 
 %% API
--export([start/0, stop/0, start_link/0]).
+-export([start/0, stop/0, start_link/0,
+         get_monitor_options/0, set_monitor_options/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -40,6 +41,12 @@ stop() ->
 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+
+get_monitor_options() ->
+    gen_server:call(?SERVER, get_monitor_options).
+
+set_monitor_options(Settings) ->
+    gen_server:call(?SERVER, {set_monitor_options, Settings}).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -80,6 +87,14 @@ init([]) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
+handle_call(get_monitor_options, _From, State) ->
+    Self = self(),
+    {Self, Options} = erlang:system_monitor(),
+    {reply, Options, State};
+handle_call({set_monitor_options, Settings}, _From, State) ->
+    Self = self(),
+    {Self, Options} = erlang:system_monitor(self(), Settings),
+    {reply, Options, State};
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -169,9 +184,9 @@ msg_to_alarm({mnesia_error, Format, Args}) ->
 
 %% from net_kernel:monitor_nodes/2
 msg_to_alarm({nodeup, Node, InfoList}) ->
-    {nodeup, Node, InfoList};
+    {nodeup, {Node, InfoList}};
 msg_to_alarm({nodedown, Node, InfoList}) ->
-    {nodedown, Node, InfoList};
+    {nodedown, {Node, InfoList}};
 
 msg_to_alarm(_) ->
     false.

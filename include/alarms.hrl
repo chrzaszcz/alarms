@@ -7,6 +7,8 @@
 %%% Created : 8 May 2013 by pawel.chrzaszcz@erlang-solutions.com
 %%%-------------------------------------------------------------------
 
+-define(EVENT_MANAGER, alarm_handler).
+
 -define(ALARM_TYPES,
         [long_gc,
          large_heap,

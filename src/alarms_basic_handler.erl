@@ -17,7 +17,8 @@
 -export([init/1, handle_event/2, handle_call/2,
          handle_info/2, terminate/2, code_change/3]).
 
--define(SERVER, alarm_handler).
+-include("alarms.hrl").
+
 -define(MIN_LOG_INTERVAL, 1).
 
 -record(state, {alarms, log_ts}).
@@ -39,7 +40,7 @@
 %%--------------------------------------------------------------------
 -spec add_handler() ->  ok | {'EXIT', term()} | term().
 add_handler() ->
-    gen_event:add_handler(?SERVER, ?MODULE, []).
+    gen_event:add_handler(?EVENT_MANAGER, ?MODULE, []).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -48,7 +49,7 @@ add_handler() ->
 %%--------------------------------------------------------------------
 -spec swap_handler() -> ok | {error, term()}.
 swap_handler() ->
-    gen_event:swap_handler(?SERVER,
+    gen_event:swap_handler(?EVENT_MANAGER,
                            {alarm_handler, swap},
                            {?MODULE, []}).
 
@@ -59,7 +60,7 @@ swap_handler() ->
 %%--------------------------------------------------------------------
 -spec get_alarms() -> [alarm()].
 get_alarms() ->
-    gen_event:call(?SERVER, ?MODULE, get_alarms).
+    gen_event:call(?EVENT_MANAGER, ?MODULE, get_alarms).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -68,7 +69,7 @@ get_alarms() ->
 %%--------------------------------------------------------------------
 -spec get_alarm(alarm_type()) -> {ok, alarm_data()} | error.
 get_alarm(AlarmType) ->
-    gen_event:call(?SERVER, ?MODULE, {get_alarm, AlarmType}).
+    gen_event:call(?EVENT_MANAGER, ?MODULE, {get_alarm, AlarmType}).
 
 %%%===================================================================
 %%% gen_event callbacks
