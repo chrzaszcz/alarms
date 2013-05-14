@@ -19,7 +19,7 @@
 
 -include("alarms.hrl").
 
--define(MIN_LOG_INTERVAL, 1).
+-define(MIN_LOG_INTERVAL, 30).
 
 -record(state, {alarms, log_ts}).
 
