@@ -19,7 +19,7 @@
 
 -include("alarms.hrl").
 
--define(MIN_LOG_INTERVAL, 30).
+-define(MIN_LOG_INTERVAL, alarms_utils:get_cfg(min_log_interval)).
 
 -record(state, {alarms, log_ts}).
 
@@ -190,12 +190,12 @@ handle_alarm(AlarmType, Details, Alarms0, LogTS0) ->
                 {ok, {Cnt, _Last, _Details}} -> Cnt + 1;
                 error                        -> 1
             end,
-    TS = calendar:local_time(),
+    TS = alarms_utils:epoch_usec_to_local_time(alarms_utils:now_epoch_usec()),
     Alarms = orddict:store(AlarmType, {Count, TS, Details}, Alarms0),
     ShouldLog = case orddict:find(AlarmType, LogTS0) of
                     {ok, T} ->
                         calendar:datetime_to_gregorian_seconds(TS) -
-                            calendar:datetime_to_gregorian_seconds(T) >
+                            calendar:datetime_to_gregorian_seconds(T) >=
                             ?MIN_LOG_INTERVAL;
                     error ->
                         true

@@ -186,16 +186,10 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
--define(EPOCH_SEC, 62167219200).
-
 do_get_alarm(AlarmType) ->
     [{count, Count}, {one, CurCount}] =
         folsom_metrics:get_metric_value({alarm, AlarmType, summary}),
     History0 = folsom_metrics:get_metric_value({alarm, AlarmType, history}),
-    History = [{epoch_usec_to_local_time(TS), Events}
+    History = [{alarms_utils:epoch_usec_to_local_time(TS), Events}
                || {TS, Events} <- History0],
     {Count, CurCount, History}.
-
-epoch_usec_to_local_time(USec) ->
-    calendar:universal_time_to_local_time(
-      calendar:gregorian_seconds_to_datetime(?EPOCH_SEC + USec div 1000000)).

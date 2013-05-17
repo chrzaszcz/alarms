@@ -1,4 +1,7 @@
 ebin
 rebar
 deps
+test/*.beam
+.eunit
+logs
 *~

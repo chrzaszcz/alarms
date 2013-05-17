@@ -8,6 +8,9 @@ compile: rebar
 test: rebar compile
 	./rebar skip_deps=true eunit
 
+ct: rebar compile
+	./rebar skip_deps=true ct -v
+
 clean: rebar
 	./rebar clean
 
