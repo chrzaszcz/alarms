@@ -177,10 +177,14 @@ msg_to_alarm({mnesia_overload, Details}) ->
     {mnesia_overload, Details};
 msg_to_alarm({inconsistent_database, Context, Node}) ->
     {inconsistent_database, {Context, Node}};
-msg_to_alarm({mnesia_fatal, Format, Args, BinaryCore}) ->
-    {mnesia_fatal, {Format, Args, BinaryCore}};
+msg_to_alarm({mnesia_fatal, Format, Args, _BinaryCore}) ->
+    {mnesia_fatal, {Format, Args}};
 msg_to_alarm({mnesia_error, Format, Args}) ->
     {mnesia_error, {Format, Args}};
+msg_to_alarm({mnesia_up, Node}) ->
+    {mnesia_up, Node};
+msg_to_alarm({mnesia_down, Node}) ->
+    {mnesia_down, Node};
 
 %% from net_kernel:monitor_nodes/2
 msg_to_alarm({nodeup, Node, InfoList}) ->

@@ -200,16 +200,22 @@ handle_alarm(AlarmType, Details, Alarms0, LogTS0) ->
                     error ->
                         true
                 end,
-    LogTS = case ShouldLog of
-                true ->
-                    log(AlarmType, Count, Details),
-                    orddict:store(AlarmType, TS, LogTS0);
-                false ->
-                    LogTS0
+    LogTS = case ShouldLog andalso maybe_log(AlarmType, Count, Details) of
+                true  -> orddict:store(AlarmType, TS, LogTS0);
+                false -> LogTS0
             end,
     {Alarms, LogTS}.
 
-log(AlarmType, Count, Details) ->
-    error_logger:info_report([{alarm, AlarmType},
-                              {count, Count},
-                              {details, Details}]).
+maybe_log(AlarmType, Count, Details) ->
+    case lists:member(
+           AlarmType,
+           [mnesia_up, mnesia_down |
+            ?SYSTEM_MONITOR_ALARM_TYPES ++ ?NET_KERNEL_ALARM_TYPES]) of
+        true ->
+            error_logger:info_report([{alarm, AlarmType},
+                                      {count, Count},
+                                      {details, Details}]),
+            true;
+        false ->
+            false
+    end.

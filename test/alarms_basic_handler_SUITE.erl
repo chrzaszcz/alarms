@@ -78,6 +78,7 @@ test_logging(_Config) ->
     fake_alarm(long_gc, gc1),
     fake_alarm(long_gc, gc2),
     fake_alarm(large_heap, lh),
+    fake_alarm(mnesia_error, {"error", []}), % should not be logged
 
     %% Wait until events are processed
     sys:get_status(alarm_handler),

@@ -86,12 +86,20 @@ test_alarm_handling(_Config) ->
     alarm_handler:clear_alarm(inconsistent_database),
 
     fake_event({mnesia_fatal, "fatal", [], <<>>}),
-    [{mnesia_fatal, {"fatal", [], <<>>}}] = alarm_handler:get_alarms(),
+    [{mnesia_fatal, {"fatal", []}}] = alarm_handler:get_alarms(),
     alarm_handler:clear_alarm(mnesia_fatal),
 
     fake_event({mnesia_error, "error", []}),
     [{mnesia_error, {"error", []}}] = alarm_handler:get_alarms(),
     alarm_handler:clear_alarm(mnesia_error),
+
+    fake_event({mnesia_up, node}),
+    [{mnesia_up, node}] = alarm_handler:get_alarms(),
+    alarm_handler:clear_alarm(mnesia_up),
+
+    fake_event({mnesia_down, node}),
+    [{mnesia_down, node}] = alarm_handler:get_alarms(),
+    alarm_handler:clear_alarm(mnesia_down),
 
     fake_event({nodeup, upnode, []}),
     [{nodeup, {upnode, []}}] = alarm_handler:get_alarms(),
