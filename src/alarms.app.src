@@ -10,10 +10,12 @@
                   mnesia
                  ]},
   {mod, {alarms_app, []}},
-  {env, [{handlers, [alarms_basic_handler,
-                     alarms_folsom_handler
-                    ]},
+  {env, [
+         {handlers, [alarms_basic_handler, alarms_folsom_handler]},
+         {{alarms_basic_handler, min_log_interval}, 30},
+         {{alarms_basic_handler, report}, info_report},
+         {{alarms_folsom_handler, history_size}, 1000},
          {long_gc, 10000},
-         {large_heap, 1000000},
-         {min_log_interval, 30}]}
+         {large_heap, 1000000}
+        ]}
  ]}.

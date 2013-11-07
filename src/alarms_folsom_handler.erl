@@ -11,7 +11,7 @@
 -behaviour(gen_event).
 
 %% API
--export([add_handler/0, get_alarms/0, get_alarm/1]).
+-export([add_handler/0, get_alarms/0, get_alarm/1, get_alarm/2]).
 
 %% gen_event callbacks
 -export([init/1, handle_event/2, handle_call/2,
@@ -30,7 +30,7 @@
 -type history() :: [{Timestamp :: calendar:datetime(),
                      [{event, Details :: term()}]}].
 
--define(HISTORY_SIZE, 1000).
+-define(DEFAULT_LIMIT, 5).
 
 %%%===================================================================
 %%% API
@@ -61,7 +61,17 @@ get_alarms() ->
 %%--------------------------------------------------------------------
 -spec get_alarm(alarm_type()) -> {ok, alarm_data()} | error.
 get_alarm(AlarmType) ->
-    gen_event:call(?EVENT_MANAGER, ?MODULE, {get_alarm, AlarmType}).
+    gen_event:call(?EVENT_MANAGER, ?MODULE,
+                   {get_alarm, AlarmType, ?DEFAULT_LIMIT}).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Returns the summary of alarms of the specified type.
+%% @end
+%%--------------------------------------------------------------------
+-spec get_alarm(alarm_type(), pos_integer()) -> {ok, alarm_data()} | error.
+get_alarm(AlarmType, Limit) ->
+    gen_event:call(?EVENT_MANAGER, ?MODULE, {get_alarm, AlarmType, Limit}).
 
 %%%===================================================================
 %%% gen_event callbacks
@@ -78,12 +88,13 @@ get_alarm(AlarmType) ->
 %%--------------------------------------------------------------------
 init(_) ->
     folsom:start(),
+    HistorySize = alarms_utils:get_cfg({?MODULE, history_size}),
     lists:foreach(
       fun(AlarmType) ->
               folsom_metrics:new_spiral({alarm, AlarmType, summary}),
               folsom_metrics:tag_metric({alarm, AlarmType, summary}, alarm),
               folsom_metrics:new_history({alarm, AlarmType, history},
-                                         ?HISTORY_SIZE),
+                                         HistorySize),
               folsom_metrics:tag_metric({alarm, AlarmType, history}, alarm)
       end, alarms_utils:alarm_types()),
     {ok, #state{}}.
@@ -129,15 +140,16 @@ handle_event(_, State) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call(get_alarms, State) ->
-    Reply = lists:flatmap(fun(AlarmType) ->
-                                  case do_get_alarm(AlarmType) of
-                                      {0, _, _} -> [];
-                                      AlarmData -> [{AlarmType, AlarmData}]
-                                  end
-                          end, alarms_utils:alarm_types()),
+    Reply = lists:flatmap(
+              fun(AlarmType) ->
+                      case do_get_alarm(AlarmType, ?DEFAULT_LIMIT) of
+                          {0, _, _} -> [];
+                          AlarmData -> [{AlarmType, AlarmData}]
+                      end
+              end, alarms_utils:alarm_types()),
     {ok, Reply, State};
-handle_call({get_alarm, AlarmType}, State) ->
-    Reply = do_get_alarm(AlarmType),
+handle_call({get_alarm, AlarmType, Limit}, State) ->
+    Reply = do_get_alarm(AlarmType, Limit),
     {ok, Reply, State};
 handle_call(_Request, State) ->
     Reply = ok,
@@ -186,10 +198,11 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-do_get_alarm(AlarmType) ->
+do_get_alarm(AlarmType, Limit) ->
     [{count, Count}, {one, CurCount}] =
         folsom_metrics:get_metric_value({alarm, AlarmType, summary}),
-    History0 = folsom_metrics:get_metric_value({alarm, AlarmType, history}),
+    History0 = folsom_metrics_history:get_events(
+                 {alarm, AlarmType, history}, Limit),
     History = [{alarms_utils:epoch_usec_to_local_time(TS), Events}
                || {TS, Events} <- History0],
     {Count, CurCount, History}.

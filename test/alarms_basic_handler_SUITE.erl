@@ -34,8 +34,8 @@ end_per_suite(_Config) ->
 
 init_per_testcase(test_logging, Config) ->
     alarms:start(),
-    Interval = alarms_utils:get_cfg(min_log_interval),
-    alarms_utils:set_cfg(min_log_interval, 1),
+    Interval = alarms_utils:get_cfg({alarms_basic_handler, min_log_interval}),
+    alarms_utils:set_cfg({alarms_basic_handler, min_log_interval}, 1),
     error_logger:add_report_handler(test_report_handler),
     [{min_log_interval, Interval}|Config];
 init_per_testcase(test_unexpected, Config) ->
