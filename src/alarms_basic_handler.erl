@@ -194,7 +194,7 @@ handle_alarm(AlarmType, Details, Alarms0, LogTS0) ->
                     {ok, T} ->
                         calendar:datetime_to_gregorian_seconds(TS) -
                             calendar:datetime_to_gregorian_seconds(T) >=
-                            alarms_utils:get_cfg({?MODULE, min_log_interval});
+                            alarms_utils:get_cfg(?MODULE, min_log_interval);
                     error ->
                         true
                 end,
@@ -210,7 +210,7 @@ maybe_log(AlarmType, Count, Details) ->
            [mnesia_up, mnesia_down |
             ?SYSTEM_MONITOR_ALARM_TYPES ++ ?NET_KERNEL_ALARM_TYPES]) of
         true ->
-            Report = alarms_utils:get_cfg({?MODULE, report}),
+            Report = alarms_utils:get_cfg(?MODULE, report),
             error_logger:Report([{alarm, AlarmType},
                                  {count, Count},
                                  {details, Details}]),

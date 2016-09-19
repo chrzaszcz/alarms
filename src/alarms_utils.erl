@@ -8,7 +8,7 @@
 %%%-------------------------------------------------------------------
 -module(alarms_utils).
 
--export([get_cfg/1, set_cfg/2, alarm_types/0, event_manager/0,
+-export([get_cfg/1, get_cfg/2, set_cfg/2, alarm_types/0, event_manager/0,
          now_epoch_usec/0, epoch_usec_to_local_time/1]).
 
 -include("alarms.hrl").
@@ -18,6 +18,12 @@
 get_cfg(Key) ->
     {ok, Val} = application:get_env(alarms, Key),
     Val.
+
+get_cfg(Mod, Key) ->
+    get_cfg(key(Mod, Key)).
+
+key(Mod, Key) ->
+    list_to_atom(atom_to_list(Mod) ++ "." ++ atom_to_list(Key)).
 
 set_cfg(Key, Val) ->
     application:set_env(alarms, Key, Val).
