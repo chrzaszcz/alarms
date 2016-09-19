@@ -88,7 +88,7 @@ get_alarm(AlarmType, Limit) ->
 %%--------------------------------------------------------------------
 init(_) ->
     folsom:start(),
-    HistorySize = alarms_utils:get_cfg({?MODULE, history_size}),
+    HistorySize = alarms_utils:get_cfg(?MODULE, history_size),
     lists:foreach(
       fun(AlarmType) ->
               folsom_metrics:new_spiral({alarm, AlarmType, summary}),
